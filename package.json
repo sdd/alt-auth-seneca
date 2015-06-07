@@ -1,0 +1,27 @@
+{
+  "name": "alt-auth-seneca",
+  "version": "0.0.1",
+  "description": "Alternate to seneca-auth plugin for Seneca.",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "keywords": [
+    "seneca",
+    "auth",
+    "seneca-auth"
+  ],
+  "author": "Scott Donnelly",
+  "license": "MIT",
+  "dependencies": {
+    "jsonwebtoken": "^5.0.1",
+    "koa-router": "^5.1.1",
+    "lodash": "^3.9.3",
+    "passport": "^0.2.2",
+    "passport-google-oauth": "^0.2.0",
+    "passport-twitter": "^1.0.3"
+  }
+}
