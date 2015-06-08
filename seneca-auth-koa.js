@@ -1,5 +1,5 @@
 'use strict';
-var     _ = require('lodash'),
+const    _ = require('lodash'),
     router = require('koa-router')();
 
 const defaults = {
@@ -12,7 +12,7 @@ const scriptResponse = function(message) {
 };
 
 module.exports = function(seneca_instance, options) {
-    var seneca = seneca_instance || require('seneca')();
+    const seneca = seneca_instance || require('seneca')();
 
     options = _.extend(defaults, options);
 
@@ -28,14 +28,14 @@ module.exports = function(seneca_instance, options) {
         return _.extend(authArgs, { system: 'auth', action: 'auth', strategy: ctx.strategy });
     };
 
-    router.param('strategy', function *(strategy, next) {
+    router.param('strategy', function * param_strategy(strategy, next) {
         this.strategy = strategy;
         if (!this.strategy) return this.status = 404;
         yield next;
     });
 
-    router.get(options.auth_url, function* () {
-        var result = yield seneca.actAsync(buildAuthArgs(this));
+    router.get(options.auth_url, function* get_auth_auth() {
+        let result = yield seneca.actAsync(buildAuthArgs(this));
         if (result.oauth_token_secret) {
             this.session.oauth_token_secret = result.oauth_token_secret;
             delete result.oauth_token_secret;
@@ -43,9 +43,9 @@ module.exports = function(seneca_instance, options) {
         this.body = result;
     });
 
-    router.get(options.callback_url, function* () {
+    router.get(options.callback_url, function* get_auth_callback() {
 
-        var authResponse = yield seneca.actAsync(buildAuthArgs(this));
+        let authResponse = yield seneca.actAsync(buildAuthArgs(this));
 
         if (authResponse.result === 'success') {
 	        console.info(authResponse);
