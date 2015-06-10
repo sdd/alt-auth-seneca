@@ -1,0 +1,96 @@
+"use strict";
+var request         = require('supertest'),
+    koa             = require('koa'),
+    mount           = require('koa-mount'),
+    router          = require('koa-router'),
+    Promise         = require('bluebird'),
+    chai            = require('chai'),
+    sinon           = require('sinon'),
+    expect          = chai.expect;
+
+chai.use(require('sinon-chai'));
+
+var senecaAuthKoa = require('../seneca-auth-koa');
+
+describe('alt-seneca-auth', function() {
+
+    describe('strategy loader', function () {
+
+        it('should load in all strategies from the strategy directory', function () {
+        });
+    });
+
+    describe('seneca message handler: auth-auth', function () {
+        it('should call passport auth with the correct strategy', function () {
+            //var senecaActStub = sinon.stub();
+            //var senecaMock = {actAsync: senecaActStub};
+            //var app = koa().use(senecaAuthKoa(senecaMock));
+            //senecaActStub.returns(Promise.resolve({}));
+            //
+            //var testRouter = router()
+            //    .get('/auth/twitter', function * (next) {
+            //        this.session = {
+            //            oauth_token_secret: 'test',
+            //            should_not_be_here: 'test'
+            //        };
+            //        yield next;
+            //    });
+            //
+            //var superApp = koa()
+            //    .use(testRouter.routes())
+            //    .use(mount('/', app));
+            //
+            //request(superApp.listen())
+            //    .get('/auth/twitter')
+            //    .expect(function () {
+            //
+            //        expect(senecaActStub.args[0][0].oauth_token_secret).to.equal('test');
+            //        expect(senecaActStub.args[0][0].should_not_be_here).to.equal(undefined);
+            //        expect(senecaActStub.args[0][0].should_not_be_here).to.equal(5);
+            //    })
+            //    .end(done);
+        });
+
+        it('should pass to passport only the required args from session', function () {
+
+        });
+
+        it('should pass to passport only the required query args', function () {
+
+        });
+
+        describe('given a redirect response', function () {
+            it('should set the oauth_token_secret', function () {
+
+            });
+
+            it('should set the oauth_token_secret', function () {
+
+            });
+        });
+
+        describe('given a success response', function () {
+            describe('with config.autoLogin false', function () {
+                it('should return the response', function () {
+                });
+
+                it('should return success:true and result:success', function () {
+                });
+            });
+
+            describe('with config.autoLogin true', function () {
+                it('should return a valid jwt', function () {
+                });
+
+                it('should return the response user, success:true and result:success', function () {
+                });
+            });
+        });
+
+        describe('given a unknown response', function () {
+            it('should, given a redirect response, set the oauth_token_secret', function () {
+
+            });
+        });
+    });
+});
