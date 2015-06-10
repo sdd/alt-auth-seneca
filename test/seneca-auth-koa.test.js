@@ -21,12 +21,14 @@ describe('seneca-auth-koa', function() {
         var app = koa().use(senecaAuthKoa(senecaMock));
         senecaActStub.returns(Promise.resolve({}));
 
+        var session = {
+            oauth_token_secret: 'test',
+            should_not_be_here: 'test'
+        };
+
         var testRouter = router()
             .get('/auth/twitter', function * (next) {
-                this.session = {
-                    oauth_token_secret: 'test',
-                    should_not_be_here: 'test'
-                };
+                this.session = session;
                 yield next;
             });
 
@@ -37,6 +39,7 @@ describe('seneca-auth-koa', function() {
 
         it('should pass the correct system and action to seneca', function(done) {
 
+            senecaActStub.reset();
             request(superApp.listen())
                 .get('/auth/twitter')
                 .end(function() {
@@ -50,12 +53,8 @@ describe('seneca-auth-koa', function() {
 
         it('should pass the correct system and action to seneca2', function(done) {
 
-            var senecaActStub = sinon.stub();
-            var senecaMock = { actAsync: senecaActStub, test2: 2 };
-            var app = koa().use(senecaAuthKoa(senecaMock));
-            senecaActStub.returns(Promise.resolve({}));
-
-            request(app.listen())
+            senecaActStub.reset();
+            request(superApp.listen())
                 .get('/auth/twitter')
                 .end(function() {
 
@@ -67,12 +66,9 @@ describe('seneca-auth-koa', function() {
         });
 
         it('should pass the correct strategy to seneca', function(done) {
-            var senecaActStub = sinon.stub();
-            var senecaMock = { actAsync: senecaActStub };
-            var app = koa().use(senecaAuthKoa(senecaMock));
-            senecaActStub.returns(Promise.resolve({}));
 
-            request(app.listen())
+            senecaActStub.reset();
+            request(superApp.listen())
                 .get('/auth/twitter')
                 .end(function() {
                     expect(senecaActStub.args[0][0].strategy).to.equal('twitter');
@@ -82,98 +78,83 @@ describe('seneca-auth-koa', function() {
         });
 
         it('should pass only necessary args from session to seneca', function(done) {
-            var senecaActStub = sinon.stub();
-            var senecaMock = { actAsync: senecaActStub };
-            var app = koa().use(senecaAuthKoa(senecaMock));
-            senecaActStub.returns(Promise.resolve({}));
 
-            var testRouter = router()
-                .get('/auth/twitter', function * (next) {
-                    this.session = {
-                        oauth_token_secret: 'test',
-                        should_not_be_here: 'test'
-                    };
-                    yield next;
-                });
-
-            var superApp = koa()
-                .use(testRouter.routes())
-                .use(mount('/', app));
-
+            senecaActStub.reset();
             request(superApp.listen())
                 .get('/auth/twitter')
-                .expect(function() {
+                .end(function() {
 
                     expect(senecaActStub.args[0][0].oauth_token_secret).to.equal('test');
                     expect(senecaActStub.args[0][0].should_not_be_here).to.equal(undefined);
-                })
-                .end(done);
+
+                    done();
+                });
         });
 
-        //it('should pass only necessary args from query to seneca', function(done) {
-        //    var senecaActStub = sinon.stub();
-        //    var senecaMock = { actAsync: senecaActStub };
-        //    var app = koa().use(senecaAuthKoa(senecaMock));
-        //    senecaActStub.returns(Promise.resolve({}));
-        //
-        //    request(app.listen())
-        //        .get('/auth/twitter')
-        //        .query({
-        //            'request_token': 'test1',
-        //            'oauth_verifier': 'test2',
-        //            'oauth_token': 'test3',
-        //            'code': 'test4',
-        //            'client_id': 'test5',
-        //            'should_not_be_here': 'test'
-        //        }).end(function() {
-        //            expect(senecaActStub.args[0][0].request_token).to.equal('test1');
-        //            expect(senecaActStub.args[0][0].oauth_verifier).to.equal('test2');
-        //            expect(senecaActStub.args[0][0].oauth_token).to.equal('test3');
-        //            expect(senecaActStub.args[0][0].code).to.equal('test4');
-        //            expect(senecaActStub.args[0][0].client_id).to.equal('test5');
-        //            expect(senecaActStub.args[0][0].should_not_be_here).to.equal(undefined);
-        //
-        //            done();
-        //        });
-        //});
+        it('should pass only necessary args from query to seneca', function(done) {
 
-        //it('should set move oauth_token_secret from result to session if present', function(done) {
-        //
-        //    var senecaResponse = {
-        //        oauth_token_secret: 'oauth_token_secret'
-        //    };
-        //
-        //    var session = {};
-        //
-        //    var senecaActStub = sinon.stub();
-        //    var senecaMock = { actAsync: senecaActStub };
-        //    var app = koa().use(senecaAuthKoa(senecaMock));
-        //    senecaActStub.returns(Promise.resolve(senecaResponse));
-        //
-        //    var testRouter = router()
-        //        .get('/auth/twitter', function * (next) {
-        //            this.session = session;
-        //            yield next;
-        //        });
-        //
-        //    var superApp = koa()
-        //        .use(testRouter.routes())
-        //        .use(mount('/', app));
-        //
-        //    request(superApp.listen())
-        //        .get('/auth/twitter')
-        //        .expect(200)
-        //        .end(function(err, res) {
-        //
-        //            expect(res.oauth_token_secret).to.equal(undefined);
-        //            expect(session.oauth_token_secret).to.equal('oauth_token_secret');
-        //
-        //            done();
-        //        });
-        //});
+            senecaActStub.reset();
+            request(superApp.listen())
+                .get('/auth/twitter')
+                .query({
+                    'request_token': 'test1',
+                    'oauth_verifier': 'test2',
+                    'oauth_token': 'test3',
+                    'code': 'test4',
+                    'client_id': 'test5',
+                    'should_not_be_here': 'test'
+                }).end(function() {
+                    expect(senecaActStub.args[0][0].request_token).to.equal('test1');
+                    expect(senecaActStub.args[0][0].oauth_verifier).to.equal('test2');
+                    expect(senecaActStub.args[0][0].oauth_token).to.equal('test3');
+                    expect(senecaActStub.args[0][0].code).to.equal('test4');
+                    expect(senecaActStub.args[0][0].client_id).to.equal('test5');
+                    expect(senecaActStub.args[0][0].should_not_be_here).to.equal(undefined);
+
+                    done();
+                });
+        });
+
+        it('should set move oauth_token_secret from result to session if present', function(done) {
+
+            var senecaResponse = {
+                oauth_token_secret: 'oauth_token_secret'
+            };
+            session = {};
+
+            senecaActStub.returns(Promise.resolve(senecaResponse));
+            senecaActStub.reset();
+
+            request(superApp.listen())
+                .get('/auth/twitter')
+                .expect(200)
+                .end(function(err, res) {
+
+                    expect(res.oauth_token_secret).to.equal(undefined);
+                    expect(session.oauth_token_secret).to.equal('oauth_token_secret');
+
+                    done();
+                });
+        });
 
         it('should set the body to the response from seneca', function() {
+            var senecaResponse = {
+                something: 'test'
+            };
+            session = {};
 
+            senecaActStub.returns(Promise.resolve(senecaResponse));
+            senecaActStub.reset();
+
+            request(superApp.listen())
+                .get('/auth/twitter')
+                .expect(200)
+                .end(function(err, res) {
+
+                    expect(res.something).to.equal('test');
+
+                    done();
+                });
         });
     });
 
