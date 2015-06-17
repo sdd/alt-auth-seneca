@@ -67,7 +67,11 @@ describe('alt-seneca-auth', function() {
                 session: { request_token: 'rt', 'oauth_token_secret': 'ots', 'should_not_be_here': 'test'}
             });
 
-
+            expect(passportAuthFuncStub.to.have.been.calledWithMatch({ session: {
+                request_token: 'rt',
+                'oauth_token_secret': 'ots'
+            } }));
+            expect(passportAuthFuncStub.to.not.have.been.calledWithMatch({ 'should_not_be_here': 'test' }))
         });
 
         it('should pass to passport only the required query args', function () {
@@ -75,7 +79,13 @@ describe('alt-seneca-auth', function() {
                 query: { 'oauth_token': 'ot', 'oauth_verifier': 'ov', 'code': 'c', 'client_id': 'cid', 'should_not_be_here2': 'test2' }
             });
 
-
+            expect(passportAuthFuncStub.to.have.been.calledWithMatch({ session: {
+                'oauth_token': 'ot',
+                'oauth_verifier': 'ov',
+                'code': 'c',
+                'client_id': 'cid'
+            } }));
+            expect(passportAuthFuncStub.to.not.have.been.calledWithMatch({ 'should_not_be_here2': 'test' }))
         });
 
         describe('given a redirect response', function () {
