@@ -9,13 +9,16 @@ var jwt = require('jsonwebtoken');
 module.exports = function(config, seneca_instance) {
     var seneca = seneca_instance || require('seneca')();
 
-	_.each(fs.readdirSync('./strategies'), function(file) {
-		let fileNoJs = _.initial(file.split('.')).join('.');
-		require(`./strategies/${file}`)(
-			passport,
-			_.extend(config.auth.common, config.auth[fileNoJs])
-		);
-	});
+    config.auth.strategyFolder = config.auth.strategyFolder || './strategies';
+
+    _.each(fs.readdirSync(config.auth.strategyFolder), function(file) {
+        if (file[0] == '.') { return; }
+    	let fileNoJs = _.initial(file.split('.')).join('.');
+    	require(`${config.auth.strategyFolder}/${file}`)(
+    		passport,
+    		_.extend(config.auth.common, config.auth[fileNoJs])
+    	);
+    });
 
 	passport.framework(require('./passport-fw-seneca-json'));
 
@@ -63,7 +66,7 @@ module.exports = function(config, seneca_instance) {
         },
 
         get: function(name) {
-            return this[name] || function() { return Promise.reject(`Unknown response ${response.result}`) }
+            return this[name] || function() { return Promise.reject(`Unknown response ${name}`) }
         }
     };
 
