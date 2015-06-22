@@ -1,6 +1,3 @@
-/**
- * Passport Framework for Seneca, JSON communication
- */
 'use strict';
 var Promise = require('bluebird');
 

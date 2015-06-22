@@ -12,37 +12,71 @@ var senecaAuth = require('../index');
 
 describe('alt-seneca-auth', function() {
 
+	var senecaUserLoginMockResponse = {
+		user: {
+			name: 'Testy McTest',
+			id  : 999
+		}
+	};
+
+	var senecaMock = {
+		addAsync: sinon.stub(),
+		actAsync: sinon.stub().returns(Promise.resolve(senecaUserLoginMockResponse))
+	};
+
+	var passportAuthFuncStub = sinon.stub().returns(Promise.resolve({
+		result: 'success'
+	}));
+
+	var passportMock = {
+		framework   : sinon.stub(),
+		authenticate: sinon.stub().returns(passportAuthFuncStub)
+	};
+
+	var jwtMock = {
+		sign: sinon.stub().returns('MOCKJWT')
+	};
+
     describe('strategy loader', function () {
 
         it('should load all strategies in the strategy directory', function () {
 
+	        var config = {
+		        auth: {
+			        autoLogin: false,
+			        expiry: 1,
+			        strategyFolder: './two_strategies',
+			        common: {
+				        base:    'common',
+				        extend: 'common'
+			        },
+			        strategy_1: {
+				        extend: 'strategy_1'
+			        },
+			        strategy_2: {
+				        extend: 'strategy_2'
+			        }
+		        }
+	        };
+
+	        var strategy1Mock = sinon.stub();
+	        var strategy2Mock = sinon.stub();
+
+	        proxyquire.noCallThru()('../index', {
+		        passport: passportMock,
+		        jsonwebtoken: jwtMock,
+		        './two_strategies/strategy_1.js': strategy1Mock,
+		        './two_strategies/strategy_2.js': strategy2Mock
+	        })(config, senecaMock);
+
+	        expect(strategy1Mock.args[0][1].base).to.equal('common');
+	        expect(strategy1Mock.args[0][1].extend).to.equal('strategy_1');
+	        expect(strategy2Mock.args[0][1].base).to.equal('common');
+	        expect(strategy2Mock.args[0][1].extend).to.equal('strategy_2');
         });
     });
 
-    describe('seneca message handler: auth-auth', function () {
-
-        var senecaUserLoginMockResponse = {
-            user: {
-                name: 'Testy McTest',
-                id: 999
-            }
-        };
-
-        var senecaMock = {
-            addAsync: sinon.stub(),
-            actAsync: sinon.stub().returns(Promise.resolve(senecaUserLoginMockResponse))
-        };
-
-        var passportAuthFuncStub = sinon.stub().returns(Promise.resolve({}));
-        
-        var passportMock = {
-            framework: sinon.stub(),
-            authenticate: sinon.stub().returns(passportAuthFuncStub)
-        };
-
-        var jwtMock = {
-            sign: sinon.stub().returns('MOCKJWT')
-        };
+    describe('seneca message handler: auth', function () {
 
         var config = {
             auth: { autoLogin: false, expiry: 1, strategyFolder: './no_strategies' }
@@ -63,29 +97,33 @@ describe('alt-seneca-auth', function() {
         });
 
         it('should pass to passport only the required args from session', function () {
-            action({ strategy: 'test',
+	        passportAuthFuncStub.reset();
+	        action({ strategy: 'test',
                 session: { request_token: 'rt', 'oauth_token_secret': 'ots', 'should_not_be_here': 'test'}
             });
 
-            expect(passportAuthFuncStub.to.have.been.calledWithMatch({ session: {
-                request_token: 'rt',
-                'oauth_token_secret': 'ots'
-            } }));
-            expect(passportAuthFuncStub.to.not.have.been.calledWithMatch({ 'should_not_be_here': 'test' }))
+            expect(passportAuthFuncStub).to.have.been.calledWithMatch({ session: {
+                'oauth:test': {
+	                request_token       : 'rt',
+	                'oauth_token_secret': 'ots'
+                }
+            } });
+            expect(passportAuthFuncStub).to.not.have.been.calledWithMatch({ 'should_not_be_here': 'test' });
         });
 
         it('should pass to passport only the required query args', function () {
-            action({ strategy: 'test',
+	        passportAuthFuncStub.reset();
+	        action({ strategy: 'test',
                 query: { 'oauth_token': 'ot', 'oauth_verifier': 'ov', 'code': 'c', 'client_id': 'cid', 'should_not_be_here2': 'test2' }
             });
 
-            expect(passportAuthFuncStub.to.have.been.calledWithMatch({ session: {
+            expect(passportAuthFuncStub).to.have.been.calledWithMatch({ query: {
                 'oauth_token': 'ot',
                 'oauth_verifier': 'ov',
                 'code': 'c',
                 'client_id': 'cid'
-            } }));
-            expect(passportAuthFuncStub.to.not.have.been.calledWithMatch({ 'should_not_be_here2': 'test' }))
+            } });
+            expect(passportAuthFuncStub).to.not.have.been.calledWithMatch({ 'should_not_be_here2': 'test' });
         });
 
         describe('given a redirect response', function () {
@@ -132,7 +170,7 @@ describe('alt-seneca-auth', function() {
                         expect(res.success).to.equal(true);
                         expect(res.result).to.equal('success');
                         expect(res.auth.testResult2).to.equal('testResult2');
-                    }).then(done);
+                    }).then(done).catch(done);
                 });
             });
 
@@ -150,7 +188,7 @@ describe('alt-seneca-auth', function() {
                     expect(result).to.be.fulfilled.then(function(res) {
                         expect(jwtMock.sign).to.have.been.called;
                         expect(res.jwt).to.equal('MOCKJWT');
-                    }).then(done);
+                    }).then(done).catch(done);
                 });
 
                 it('should return the response user, success:true and result:success', function (done) {
@@ -158,7 +196,7 @@ describe('alt-seneca-auth', function() {
                         expect(res.success).to.equal(true);
                         expect(res.result).to.equal('success');
                         expect(res.user.name).to.equal('Testy McTest');
-                    }).then(done);
+                    }).then(done).catch(done);
                 });
             });
         });

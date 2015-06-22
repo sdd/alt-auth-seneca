@@ -16,22 +16,24 @@ module.exports = function(config, seneca_instance) {
     	let fileNoJs = _.initial(file.split('.')).join('.');
     	require(`${config.auth.strategyFolder}/${file}`)(
     		passport,
-    		_.extend(config.auth.common, config.auth[fileNoJs])
+    		_.extend(_.cloneDeep(config.auth.common), config.auth[fileNoJs])
     	);
     });
 
 	passport.framework(require('./passport-fw-seneca-json'));
 
-	var mapArgsToAuth = function(args, session) {
+	var mapArgsToAuth = function(args) {
+		var newSession = {};
+
 		const params                      = {
 			session: ['request_token', 'oauth_token_secret'],
 			query  : ['oauth_token', 'oauth_verifier', 'code', 'client_id']
 		};
-		session['oauth:' + args.strategy] = _.pick(args, params.session);
+		newSession['oauth:' + args.strategy] = _.pick(args.session, params.session);
 
 		return {
-			session: session,
-			query  : _.pick(args, params.query)
+			session: newSession,
+			query  : _.pick(args.query, params.query)
 		}
 	};
 

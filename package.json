@@ -26,7 +26,6 @@
     "passport-twitter": "^1.0.3"
   },
   "devDependencies": {
-    "bluebird": "^2.9.27",
     "chai": "^3.0.0",
     "chai-as-promised": "^5.1.0",
     "koa": "^0.21.0",
