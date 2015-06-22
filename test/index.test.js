@@ -45,7 +45,7 @@ describe('alt-seneca-auth', function() {
 		        auth: {
 			        autoLogin: false,
 			        expiry: 1,
-			        strategyFolder: './two_strategies',
+			        strategyFolder: './test/two_strategies',
 			        common: {
 				        base:    'common',
 				        extend: 'common'
@@ -65,8 +65,8 @@ describe('alt-seneca-auth', function() {
 	        proxyquire.noCallThru()('../index', {
 		        passport: passportMock,
 		        jsonwebtoken: jwtMock,
-		        './two_strategies/strategy_1.js': strategy1Mock,
-		        './two_strategies/strategy_2.js': strategy2Mock
+		        './test/two_strategies/strategy_1.js': strategy1Mock,
+		        './test/two_strategies/strategy_2.js': strategy2Mock
 	        })(config, senecaMock);
 
 	        expect(strategy1Mock.args[0][1].base).to.equal('common');
@@ -79,7 +79,7 @@ describe('alt-seneca-auth', function() {
     describe('seneca message handler: auth', function () {
 
         var config = {
-            auth: { autoLogin: false, expiry: 1, strategyFolder: './no_strategies' }
+            auth: { autoLogin: false, expiry: 1, strategyFolder: './test/no_strategies' }
         };
 
         proxyquire('../index', { passport: passportMock, jsonwebtoken: jwtMock })(config, senecaMock);
