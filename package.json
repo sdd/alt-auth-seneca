@@ -1,6 +1,6 @@
 {
   "name": "alt-auth-seneca",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Alternate to seneca-auth plugin for Seneca.",
   "main": "index.js",
   "directories": {
