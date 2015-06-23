@@ -9,7 +9,7 @@ var jwt = require('jsonwebtoken');
 module.exports = function(config, seneca_instance) {
     var seneca = seneca_instance || require('seneca')();
 
-    config.auth.strategyFolder = config.auth.strategyFolder || './strategies';
+    config.auth.strategyFolder = config.auth.strategyFolder || path.join(process.cwd(), 'strategies');
 
     _.each(fs.readdirSync(config.auth.strategyFolder), function(file) {
         if (file[0] == '.') { return; }
@@ -33,7 +33,7 @@ module.exports = function(config, seneca_instance) {
 
 		return {
 			session: newSession,
-			query  : _.pick(args.query, params.query)
+			query  : _.pick(args, params.query)
 		}
 	};
 
