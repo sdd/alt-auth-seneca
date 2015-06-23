@@ -113,8 +113,13 @@ describe('alt-seneca-auth', function() {
 
         it('should pass to passport only the required query args', function () {
 	        passportAuthFuncStub.reset();
-	        action({ strategy: 'test',
-                query: { 'oauth_token': 'ot', 'oauth_verifier': 'ov', 'code': 'c', 'client_id': 'cid', 'should_not_be_here2': 'test2' }
+	        action({
+                strategy: 'test',
+                'oauth_token': 'ot',
+                'oauth_verifier': 'ov',
+                'code': 'c',
+                'client_id': 'cid',
+                'should_not_be_here2': 'test2'
             });
 
             expect(passportAuthFuncStub).to.have.been.calledWithMatch({ query: {
