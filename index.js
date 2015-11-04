@@ -25,7 +25,7 @@ module.exports = function(config, seneca_instance) {
 	var mapArgsToAuth = function(args) {
 		var newSession = {};
 
-		const params                      = {
+		const params = {
 			session: ['request_token', 'oauth_token_secret'],
 			query  : ['oauth_token', 'oauth_verifier', 'code', 'client_id']
 		};
@@ -38,7 +38,7 @@ module.exports = function(config, seneca_instance) {
 	};
 
     seneca.addAsync({system: 'auth', action: 'auth'}, function (args) {
-        let auth = passport.authenticate(args.strategy);
+        let auth = passport.authenticate(args.strategy, config.auth[args.strategy].options);
         var session = {};
 
         return auth(mapArgsToAuth(args, session))
@@ -55,9 +55,10 @@ module.exports = function(config, seneca_instance) {
 	        if (config.auth.autoLogin) {
 		        return seneca.actAsync({ system: 'user', action: 'login', query: response })
 			        .then(function(response) {
+
 				        var token = jwt.sign(
 					        { detail: { name: response.user.name } },
-					        process.env.JWT_KEY,
+					        config.jwt.secret,
 					        { expiresInMinutes: config.auth.expiry, subject: response.user.id }
 				        );
 				        return { success: true, result: 'success', user: response.user, jwt: token };
