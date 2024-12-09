@@ -22,7 +22,7 @@
     "koa-router": "^5.1.1",
     "lodash": "^4.17.11",
     "passport": "^0.6.0",
-    "passport-google-oauth": "^0.2.0",
+    "passport-google-oauth": "^2.0.0",
     "passport-twitter": "^1.0.3"
   },
   "devDependencies": {
